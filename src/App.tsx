@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box, BoxProps } from 'rebass';
+import { Box } from 'rebass';
 import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd';
 import Xarrow from 'react-xarrows';
 import { useDebouncedCallback } from 'use-debounce';
 import { Card } from './components/Card';
 import { AddCard } from './components/AddCard';
+import { LayerCard } from './components/LayerCard';
 
 const SAVE_DEBOUNCE = 1000;
 const STORAGE_KEY_STACK = 'stack';
@@ -681,55 +682,6 @@ export function LayerItem({
     />
   );
 }
-
-const LayerCard = React.forwardRef(
-  (
-    {
-      isHighlight,
-      onAddLayer,
-      onRemoveLayer,
-      ...props
-    }: BoxProps & {
-      isHighlight: boolean;
-      onAddLayer: () => void;
-      onRemoveLayer: () => void;
-    },
-    ref
-  ) => {
-    const handleKeyDown = React.useCallback(
-      (event: React.KeyboardEvent<HTMLDivElement>) => {
-        const command = translateKeyboard(event);
-        switch (command) {
-          case Command.ADD:
-            onAddLayer();
-            event.preventDefault();
-            break;
-          case Command.REMOVE:
-            onRemoveLayer();
-            event.preventDefault();
-            break;
-        }
-        if (command !== Command.NONE) {
-          event.stopPropagation();
-        }
-      },
-      [onAddLayer, onRemoveLayer]
-    );
-
-    return (
-      <Box
-        ref={ref}
-        tabIndex={0}
-        sx={{ border: '1px solid blue', display: 'flex' }}
-        bg={isHighlight ? colors.highlight : undefined}
-        mb={4}
-        py={2}
-        onKeyDown={handleKeyDown}
-        {...props}
-      />
-    );
-  }
-);
 
 function moveItem(
   stack: Item[][],
