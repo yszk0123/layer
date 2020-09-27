@@ -4,6 +4,7 @@ import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd';
 import Xarrow from 'react-xarrows';
 import { useDebouncedCallback } from 'use-debounce';
 import { Card } from './components/Card';
+import { AddCard } from './components/AddCard';
 
 const SAVE_DEBOUNCE = 1000;
 const STORAGE_KEY_STACK = 'stack';
@@ -680,21 +681,6 @@ export function LayerItem({
     />
   );
 }
-
-const AddCard = React.forwardRef(({ sx, ...props }: BoxProps, ref) => {
-  return (
-    <Box
-      ref={ref}
-      sx={{ ...sx, border: '1px solid gray' }}
-      m={2}
-      tabIndex={0}
-      p={2}
-      {...props}
-    >
-      +
-    </Box>
-  );
-});
 
 const LayerCard = React.forwardRef(
   (
