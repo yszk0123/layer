@@ -9,6 +9,7 @@ import { LayerCard } from './components/LayerCard';
 import { translateKeyboard, Command } from './ShortcutCommand';
 import { useRedoableState } from './hooks/useRedoableState';
 import { generateLookup, getLookupKey } from './generateLookup';
+import { LayerStack } from './components/LayerStack';
 
 const SAVE_DEBOUNCE = 1000;
 const STORAGE_KEY_STACK = 'stack';
@@ -34,7 +35,7 @@ type DragLayer = {
 };
 
 const STACK: Item[][] = [[]];
-const EMPTY_STACK: Item[][] = [[]];
+export const EMPTY_STACK: Item[][] = [[]];
 
 enum ItemTypes {
   CARD = 'CARD',
@@ -231,47 +232,6 @@ function parse(input: string): Item[][] {
         .map((text) => ({ text }));
     });
   return result;
-}
-
-export function LayerStack({
-  stack,
-  onDropItem,
-  onDropLayer,
-  onAddLayer,
-  onRemoveLayer,
-  onAddItem,
-  onRemoveItem,
-  onUpdateText,
-}: {
-  stack: Item[][];
-  onAddLayer: (layerIndex: number) => void;
-  onRemoveLayer: (layerIndex: number) => void;
-  onAddItem: (position: ItemPosition) => void;
-  onRemoveItem: (position: ItemPosition) => void;
-  onDropItem: (src: ItemPosition, dest: ItemPosition) => void;
-  onDropLayer: (src: number, dest: number) => void;
-  onUpdateText: (text: string, position: ItemPosition) => void;
-}) {
-  return (
-    <Box>
-      {(stack.length === 0 ? EMPTY_STACK : stack).map((items, i) => {
-        return (
-          <Layer
-            key={i}
-            items={items}
-            index={i}
-            onAddLayer={onAddLayer}
-            onRemoveLayer={onRemoveLayer}
-            onAddItem={onAddItem}
-            onRemoveItem={onRemoveItem}
-            onDropItem={onDropItem}
-            onDropLayer={onDropLayer}
-            onUpdateText={onUpdateText}
-          />
-        );
-      })}
-    </Box>
-  );
 }
 
 export function Layer({
