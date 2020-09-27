@@ -10,11 +10,6 @@ import { LayerStack } from './components/LayerStack';
 const SAVE_DEBOUNCE = 1000;
 const STORAGE_KEY_STACK = 'stack';
 
-export const colors = {
-  highlight: 'rgba(0, 255, 255, 0.3)',
-  changed: 'rgba(255, 128, 128, 0.3)',
-};
-
 export type Item = { text: string };
 
 export type ItemPosition = { layerIndex: number; itemIndex: number };
