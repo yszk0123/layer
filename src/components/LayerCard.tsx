@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, BoxProps } from 'rebass';
-import { translateKeyboard, Command, colors } from '../App';
+import { colors } from '../App';
+import { translateKeyboard, Command } from '../ShortcutCommand';
 
 export const LayerCard = React.forwardRef(
   (
@@ -45,7 +46,8 @@ export const LayerCard = React.forwardRef(
         mb={4}
         py={2}
         onKeyDown={handleKeyDown}
-        {...props} />
+        {...props}
+      />
     );
   }
 );

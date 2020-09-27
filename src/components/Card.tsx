@@ -1,6 +1,7 @@
 import React from 'react';
 import { Input, InputProps } from '@rebass/forms';
-import { translateKeyboard, Command, colors } from '../App';
+import { colors } from '../App';
+import { translateKeyboard, Command } from '../ShortcutCommand';
 
 export const Card = React.forwardRef(
   (

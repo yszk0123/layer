@@ -6,6 +6,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { Card } from './components/Card';
 import { AddCard } from './components/AddCard';
 import { LayerCard } from './components/LayerCard';
+import { translateKeyboard, Command } from './ShortcutCommand';
 
 const SAVE_DEBOUNCE = 1000;
 const STORAGE_KEY_STACK = 'stack';
@@ -43,44 +44,6 @@ type LookupItem = {
   position: ItemPosition;
 };
 type Lookup = Record<string, LookupItem[][]>;
-
-export enum Command {
-  NONE = 'NONE',
-  ADD = 'ADD',
-  REMOVE = 'REMOVE',
-  UPDATE = 'UPDATE',
-  UNDO = 'UNDO',
-  REDO = 'REDO',
-  COPY = 'COPY',
-  PASTE = 'PASTE',
-}
-
-export function translateKeyboard(
-  event: React.KeyboardEvent | KeyboardEvent
-): Command {
-  if (event.shiftKey && event.key === 'Enter') {
-    return Command.ADD;
-  }
-  if (event.shiftKey && event.key === 'Backspace') {
-    return Command.REMOVE;
-  }
-  if (event.metaKey && event.key === 'Enter') {
-    return Command.UPDATE;
-  }
-  if (!event.shiftKey && event.metaKey && event.key === 'z') {
-    return Command.UNDO;
-  }
-  if (event.shiftKey && event.metaKey && event.key === 'z') {
-    return Command.REDO;
-  }
-  if (event.metaKey && event.key === 'c') {
-    return Command.COPY;
-  }
-  if (event.metaKey && event.key === 'v') {
-    return Command.PASTE;
-  }
-  return Command.NONE;
-}
 
 function getLookupKey(position: ItemPosition): string {
   return `item-${position.layerIndex}-${position.itemIndex}`;
