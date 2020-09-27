@@ -11,5 +11,5 @@ ReactDOM.render(
       <App />
     </DndProvider>
   </React.StrictMode>,
-  rootElement,
+  rootElement
 );

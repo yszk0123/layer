@@ -3,6 +3,10 @@ import { Box, BoxProps } from 'rebass';
 import { Input, InputProps } from '@rebass/forms';
 import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd';
 import Xarrow from 'react-xarrows';
+import { useDebouncedCallback } from 'use-debounce';
+
+const SAVE_DEBOUNCE = 1000;
+const STORAGE_KEY_STACK = 'stack';
 
 const colors = {
   highlight: 'rgba(0, 255, 255, 0.3)',
@@ -50,7 +54,7 @@ enum Command {
 }
 
 function translateKeyboard(
-  event: React.KeyboardEvent | KeyboardEvent,
+  event: React.KeyboardEvent | KeyboardEvent
 ): Command {
   if (event.shiftKey && event.key === 'Enter') {
     return Command.ADD;
@@ -123,7 +127,7 @@ function addToLookup(
   lookup: Lookup,
   tag: string,
   layerIndex: number,
-  item: LookupItem,
+  item: LookupItem
 ): void {
   const layer = lookup[tag] || [];
   allocate(layer, layerIndex + 1);
@@ -173,7 +177,7 @@ function useRedoableState<T>(initialValue: T, max: number = 100) {
         const value = state.history[state.count - 1];
         const nextHistory = cut(
           [...state.history.slice(0, state.count), updator(value)],
-          max,
+          max
         );
         return {
           history: nextHistory,
@@ -181,7 +185,7 @@ function useRedoableState<T>(initialValue: T, max: number = 100) {
         };
       });
     },
-    [max],
+    [max]
   );
 
   const undo = React.useCallback(() => {
@@ -198,22 +202,36 @@ function useRedoableState<T>(initialValue: T, max: number = 100) {
     }));
   }, []);
 
+  const reset = React.useCallback((value: T) => {
+    setState(() => {
+      const nextHistory = [value];
+      return {
+        history: nextHistory,
+        count: nextHistory.length,
+      };
+    });
+  }, []);
+
   const latestValue = state.history[state.count - 1];
 
-  return { state: latestValue, commit, undo, redo };
+  return { state: latestValue, commit, undo, redo, reset };
 }
 
 export function App() {
-  const { state: stack, commit: setStack, undo, redo } = useRedoableState(
-    STACK,
-  );
+  const {
+    state: stack,
+    commit: setStack,
+    undo,
+    redo,
+    reset,
+  } = useRedoableState(STACK);
   const handleDropItem = React.useCallback(
     (src: ItemPosition, dest: ItemPosition) => {
       setStack((stack) => {
         return moveItem(stack, src, dest);
       });
     },
-    [setStack],
+    [setStack]
   );
   const handleDropLayer = React.useCallback(
     (src: number, dest: number) => {
@@ -221,7 +239,7 @@ export function App() {
         return moveIn(stack, src, dest);
       });
     },
-    [setStack],
+    [setStack]
   );
   const arrows = React.useMemo(() => generateLookup(stack), [stack]);
 
@@ -231,7 +249,7 @@ export function App() {
         return insertAfter(stack, layerIndex, []);
       });
     },
-    [setStack],
+    [setStack]
   );
 
   const handleRemoveLayer = React.useCallback(
@@ -240,7 +258,7 @@ export function App() {
         return removeAt(stack, layerIndex);
       });
     },
-    [setStack],
+    [setStack]
   );
 
   const handleAddItem = React.useCallback(
@@ -248,33 +266,33 @@ export function App() {
       setStack((stack) => {
         const newItem: Item = { text: '' };
         return updateAt(stack, position.layerIndex, (layer) =>
-          insertAfter(layer, position.itemIndex, newItem),
+          insertAfter(layer, position.itemIndex, newItem)
         );
       });
     },
-    [setStack],
+    [setStack]
   );
 
   const handleRemoveItem = React.useCallback(
     (position: ItemPosition) => {
       setStack((stack) => {
         return updateAt(stack, position.layerIndex, (layer) =>
-          removeAt(layer, position.itemIndex),
+          removeAt(layer, position.itemIndex)
         );
       });
     },
-    [setStack],
+    [setStack]
   );
 
   const handleUpdateText = React.useCallback(
     (text: string, position: ItemPosition) => {
       setStack((stack) =>
         updateAt(stack, position.layerIndex, (layer) =>
-          updateAt(layer, position.itemIndex, (item) => ({ ...item, text })),
-        ),
+          updateAt(layer, position.itemIndex, (item) => ({ ...item, text }))
+        )
       );
     },
-    [],
+    []
   );
   const text = React.useMemo(() => stringify(stack), [stack]);
 
@@ -301,8 +319,26 @@ export function App() {
           break;
       }
     },
-    [text, setStack, undo, redo],
+    [text, setStack, undo, redo]
   );
+
+  const debounced = useDebouncedCallback(() => {
+    const data = JSON.stringify(text);
+    localStorage.setItem(STORAGE_KEY_STACK, data);
+  }, SAVE_DEBOUNCE);
+
+  React.useEffect(() => {
+    debounced.callback();
+  }, [text]);
+
+  React.useEffect(() => {
+    const data = localStorage.getItem(STORAGE_KEY_STACK);
+    try {
+      reset(data !== null ? parse(JSON.parse(data)) : EMPTY_STACK);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [reset]);
 
   React.useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -528,7 +564,7 @@ export function Layer({
         handleAddItem();
       }
     },
-    [handleAddItem],
+    [handleAddItem]
   );
 
   drag(dropLayer(dropItem(ref)));
@@ -618,7 +654,7 @@ export function LayerItem({
     (text: string) => {
       onUpdateText(text, position);
     },
-    [onUpdateText, position],
+    [onUpdateText, position]
   );
 
   const handleAddItem = React.useCallback(() => {
@@ -661,14 +697,14 @@ const Card = React.forwardRef(
       onChange: (value: string) => void;
       isHighlight: boolean;
     },
-    ref,
+    ref
   ) => {
     const [value, setValue] = React.useState(initialValue);
     const handleChange = React.useCallback(
       (event: React.ChangeEvent<HTMLInputElement>) => {
         setValue(event.currentTarget.value);
       },
-      [],
+      []
     );
     const handleKeyDown = React.useCallback(
       (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -692,19 +728,19 @@ const Card = React.forwardRef(
         }
         return;
       },
-      [onChange, onAddItem, onRemoveItem],
+      [onChange, onAddItem, onRemoveItem]
     );
     const handleBlur = React.useCallback(
       (event: React.FocusEvent<HTMLInputElement>) => {
         onChange(event.currentTarget.value);
       },
-      [onChange],
+      [onChange]
     );
 
     const isChanged = value !== initialValue;
     const textSize = React.useMemo(
       () => (typeof value === 'string' ? getRoughTextSize(value) : 0),
-      [value],
+      [value]
     );
 
     return (
@@ -733,7 +769,7 @@ const Card = React.forwardRef(
         {...props}
       />
     );
-  },
+  }
 );
 
 // @see https://stackoverflow.com/a/12206089
@@ -798,7 +834,7 @@ const LayerCard = React.forwardRef(
       onAddLayer: () => void;
       onRemoveLayer: () => void;
     },
-    ref,
+    ref
   ) => {
     const handleKeyDown = React.useCallback(
       (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -817,7 +853,7 @@ const LayerCard = React.forwardRef(
           event.stopPropagation();
         }
       },
-      [onAddLayer, onRemoveLayer],
+      [onAddLayer, onRemoveLayer]
     );
 
     return (
@@ -832,13 +868,13 @@ const LayerCard = React.forwardRef(
         {...props}
       />
     );
-  },
+  }
 );
 
 function moveItem(
   stack: Item[][],
   src: ItemPosition,
-  dest: ItemPosition,
+  dest: ItemPosition
 ): Item[][] {
   if (src.layerIndex === dest.layerIndex) {
     const layer = stack[src.layerIndex];
@@ -853,7 +889,7 @@ function moveItem(
     return replaceAt(
       replaceAt(stack, src.layerIndex, newSrcLayer),
       dest.layerIndex,
-      newDestLayer,
+      newDestLayer
     );
   }
 }
