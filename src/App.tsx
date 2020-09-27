@@ -6,32 +6,25 @@ import { translateKeyboard, Command } from './ShortcutCommand';
 import { useRedoableState } from './hooks/useRedoableState';
 import { generateLookup } from './generateLookup';
 import { LayerStack } from './components/LayerStack';
+import {
+  Item,
+  ItemPosition,
+  EMPTY_STACK,
+  moveItem,
+  parseStack,
+  stringifyStack,
+} from './Stack';
+import {
+  moveIn,
+  insertAfter,
+  removeAt,
+  updateAt,
+  replaceAt,
+} from './ArrayUtils';
 
 const SAVE_DEBOUNCE = 1000;
 const STORAGE_KEY_STACK = 'stack';
-
-export type Item = { text: string };
-
-export type ItemPosition = { layerIndex: number; itemIndex: number };
-
-export type DragItem = {
-  type: string;
-  id: string;
-  position: ItemPosition;
-};
-export type DragLayer = {
-  type: string;
-  id: string;
-  index: number;
-};
-
 const STACK: Item[][] = [[]];
-export const EMPTY_STACK: Item[][] = [[]];
-
-export enum ItemTypes {
-  CARD = 'CARD',
-  LAYER = 'LAYER',
-}
 
 export function App() {
   const {
@@ -110,7 +103,7 @@ export function App() {
     },
     []
   );
-  const text = React.useMemo(() => stringify(stack), [stack]);
+  const text = React.useMemo(() => stringifyStack(stack), [stack]);
 
   const handleKeyDown = React.useCallback(
     async (event: React.KeyboardEvent | KeyboardEvent) => {
@@ -125,7 +118,7 @@ export function App() {
         case Command.PASTE:
           event.preventDefault();
           const clipboardText = await navigator.clipboard.readText();
-          setStack(() => parse(clipboardText));
+          setStack(() => parseStack(clipboardText));
           break;
         case Command.UNDO:
           undo();
@@ -150,7 +143,7 @@ export function App() {
   React.useEffect(() => {
     const data = localStorage.getItem(STORAGE_KEY_STACK);
     try {
-      reset(data !== null ? parse(JSON.parse(data)) : EMPTY_STACK);
+      reset(data !== null ? parseStack(JSON.parse(data)) : EMPTY_STACK);
     } catch (error) {
       console.error(error);
     }
@@ -192,92 +185,4 @@ export function App() {
       </Box>
     </Box>
   );
-}
-
-function stringify(stack: Item[][]): string {
-  return stack
-    .map((layer) => {
-      return layer
-        .map((item) => {
-          return `- ${item.text}`;
-        })
-        .join('\n');
-    })
-    .join('\n\n---\n\n')
-    .trim();
-}
-
-function parse(input: string): Item[][] {
-  const result: Item[][] = input
-    .trim()
-    .replace(/\r?\n/g, '\n')
-    .split(/---\n/)
-    .map((s) => s.trim())
-    .filter((s) => s)
-    .map((layerString) => {
-      return layerString
-        .split(/\r?\n/)
-        .map((s) => s.trim())
-        .map((s) => /^-\s+(.*)/.exec(s)?.[1] ?? '')
-        .filter((s) => s)
-        .map((text) => ({ text }));
-    });
-  return result;
-}
-
-function moveItem(
-  stack: Item[][],
-  src: ItemPosition,
-  dest: ItemPosition
-): Item[][] {
-  if (src.layerIndex === dest.layerIndex) {
-    const layer = stack[src.layerIndex];
-    const newLayer = moveIn(layer, src.itemIndex, dest.itemIndex);
-    return replaceAt(stack, src.layerIndex, newLayer);
-  } else {
-    const srcLayer = stack[src.layerIndex];
-    const destLayer = stack[dest.layerIndex];
-    const srcItem = srcLayer[src.itemIndex];
-    const newSrcLayer = removeAt(srcLayer, src.itemIndex);
-    const newDestLayer = insertAfter(destLayer, dest.itemIndex, srcItem);
-    return replaceAt(
-      replaceAt(stack, src.layerIndex, newSrcLayer),
-      dest.layerIndex,
-      newDestLayer
-    );
-  }
-}
-function removeAt<T>(items: T[], index: number): T[] {
-  return items.filter((_, i) => i !== index);
-}
-function moveIn<T>(items: T[], from: number, to: number): T[] {
-  if (from === to || from === to + 1) {
-    return items;
-  }
-  if (from > to) {
-    return insertAfter(removeAt(items, from), to, items[from]);
-  }
-  return removeAt(insertAfter(items, to, items[from]), from);
-}
-function insertAfter<T>(items: T[], index: number, item: T): T[] {
-  return [...items.slice(0, index + 1), item, ...items.slice(index + 1)];
-}
-function replaceAt<T>(items: T[], index: number, item: T): T[] {
-  if (items[index] === item) {
-    return items;
-  }
-  return [...items.slice(0, index), item, ...items.slice(index + 1)];
-}
-function updateAt<T>(items: T[], index: number, updator: (item: T) => T): T[] {
-  const newItem = updator(items[index]);
-  if (items[index] === newItem) {
-    return items;
-  }
-  return [...items.slice(0, index), newItem, ...items.slice(index + 1)];
-}
-function swapIn<T>(items: T[], i: number, j: number): T[] {
-  const result: T[] = [...items];
-  result[i] = items[j];
-  result[j] = items[i];
-  return result;
 }

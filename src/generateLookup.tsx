@@ -1,4 +1,4 @@
-import { Item, ItemPosition } from './App';
+import { Item, ItemPosition } from './Stack';
 
 export function generateLookup(stack: Item[][]): Array<[string, string]> {
   const lookup: Lookup = {};

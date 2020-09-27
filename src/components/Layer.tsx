@@ -2,14 +2,8 @@ import React from 'react';
 import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd';
 import { AddCard } from './AddCard';
 import { LayerCard } from './LayerCard';
-import {
-  Item,
-  ItemPosition,
-  ItemTypes,
-  DragItem,
-  DragLayer,
-} from '../App';
-import { LayerItem } from "./LayerItem";
+import { Item, ItemPosition, ItemTypes, DragItem, DragLayer } from '../Stack';
+import { LayerItem } from './LayerItem';
 
 export function Layer({
   items,

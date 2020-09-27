@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box } from 'rebass';
-import { Item, ItemPosition, EMPTY_STACK } from '../App';
-import { Layer } from "./Layer";
+import { Item, ItemPosition, EMPTY_STACK } from '../Stack';
+import { Layer } from './Layer';
 
 export function LayerStack({
   stack,

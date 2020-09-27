@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, BoxProps } from 'rebass';
-import { colors } from "../theme";
+import { colors } from '../theme';
 import { translateKeyboard, Command } from '../ShortcutCommand';
 
 export const LayerCard = React.forwardRef(

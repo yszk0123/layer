@@ -2,7 +2,7 @@ import React from 'react';
 import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd';
 import { Card } from './Card';
 import { getLookupKey } from '../generateLookup';
-import { Item, ItemPosition, ItemTypes, DragItem } from '../App';
+import { Item, ItemPosition, ItemTypes, DragItem } from '../Stack';
 
 export function LayerItem({
   item,
