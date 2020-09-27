@@ -8,8 +8,8 @@ import {
   ItemTypes,
   DragItem,
   DragLayer,
-  LayerItem,
 } from '../App';
+import { LayerItem } from "./LayerItem";
 
 export function Layer({
   items,
